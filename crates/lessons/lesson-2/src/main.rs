@@ -5,7 +5,7 @@ mod ball;
 
 use player::Player;
 use block::{Block, BLOCK_SIZE};
-use ball::{Ball, BALL_SIZE, BALL_SPEED};
+use ball::Ball;
 
 #[macroquad::main("Breakout")]
 async fn main() {
