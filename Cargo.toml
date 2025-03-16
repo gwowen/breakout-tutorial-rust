@@ -2,6 +2,7 @@
 members = [
     "crates/lessons/lesson-1",
     "crates/lessons/lesson-2",
+    "crates/lessons/lesson-3",
 ]
 resolver = "2"
 
