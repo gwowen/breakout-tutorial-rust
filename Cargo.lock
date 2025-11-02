@@ -151,6 +151,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "lesson-45"
+version = "0.1.0"
+dependencies = [
+ "macroquad",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.171"
 source = "registry+https://github.com/rust-lang/crates.io-index"

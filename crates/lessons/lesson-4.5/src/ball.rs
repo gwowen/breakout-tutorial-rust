@@ -28,9 +28,9 @@ impl Ball {
         if self.rect.y < 0f32 {
             self.vel.y = 1f32;
         }
-        if self.rect.y > screen_height() - self.rect.h {
-            self.vel.y = -1f32;
-        }
+        // if self.rect.y > screen_height() - self.rect.h {
+        //     self.vel.y = -1f32;
+        // }
     }
 
     pub fn draw(&self) {
