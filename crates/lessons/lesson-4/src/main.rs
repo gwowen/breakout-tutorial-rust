@@ -37,6 +37,9 @@ fn resolve_collision(a: &mut Rect, vel: &mut Vec2, b: &Rect) -> bool {
 
 #[macroquad::main("Breakout")]
 async fn main() {
+    let mut score = 0;
+    let mut player_lives = 3;
+
     let mut player = Player::new();
     let mut blocks = Vec::new();
     let mut balls = Vec::new();
@@ -65,6 +68,9 @@ async fn main() {
             for block in blocks.iter_mut() {
                 if resolve_collision(&mut ball.rect, &mut ball.vel, &block.rect) {
                     block.lives -= 1;
+                     if block.lives <= 0 {
+                        score += 10;
+                    }
                 }
             }
         }
@@ -78,6 +84,31 @@ async fn main() {
         for ball in balls.iter() {
             ball.draw();
         }
+
+        let score_text = format!("Score: {}", score);
+        draw_text_ex(
+            &score_text,
+            40.0,
+            40.0,
+            TextParams {
+                font_size: 30u16,
+                color: BLACK,
+                ..Default::default()
+            },
+        );
+
+        let player_lives_text = format!("Lives: {}", player_lives);
+        draw_text_ex(
+            &player_lives_text,
+            screen_width() / 2.0,
+            40.0,
+            TextParams {
+                font_size: 30u16,
+                color: BLACK,
+                ..Default::default()
+            },
+        );
+
         next_frame().await
     }
 }
