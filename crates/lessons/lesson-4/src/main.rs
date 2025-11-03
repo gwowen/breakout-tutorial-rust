@@ -90,6 +90,7 @@ fn resolve_collision(a: &mut Rect, vel: &mut Vec2, b: &Rect) -> bool {
 
 #[macroquad::main("Breakout")]
 async fn main() {
+    let mut game_state = GameState::Menu;
     let mut score = 0;
     let mut player_lives = 3;
 
@@ -111,24 +112,65 @@ async fn main() {
     balls.push(Ball::new(vec2(screen_width() * 0.5f32, screen_height() * 0.5f32)));
 
     loop {
-        player.update(get_frame_time());
-        for ball in balls.iter_mut() {
-            ball.update(get_frame_time());
-        }
 
-        for ball in balls.iter_mut() {
-            resolve_collision(&mut ball.rect, &mut ball.vel, &player.rect);
-            for block in blocks.iter_mut() {
-                if resolve_collision(&mut ball.rect, &mut ball.vel, &block.rect) {
-                    block.lives -= 1;
-                     if block.lives <= 0 {
-                        score += 10;
+        match game_state {
+            GameState::Menu => {
+                if is_key_pressed(KeyCode::Space) {
+                    game_state = GameState::Game;
+                }
+            }
+            GameState::Game => {
+                player.update(get_frame_time());
+                for ball in balls.iter_mut() {
+                    ball.update(get_frame_time());
+                }
+
+                for ball in balls.iter_mut() {
+                    resolve_collision(&mut ball.rect, &mut ball.vel, &player.rect);
+                    for block in blocks.iter_mut() {
+                        if resolve_collision(&mut ball.rect, &mut ball.vel, &block.rect) {
+                            block.lives -= 1;
+                            if block.lives <= 0 {
+                                score += 10;
+                            }
+                        }
                     }
+                }
+
+                let balls_len = balls.len();
+                let was_last_ball = balls_len == 1;
+                balls.retain(|ball| ball.rect.y < screen_height());
+                let removed_balls = balls_len - balls.len();
+                if removed_balls > 0 && was_last_ball {
+                        player_lives -= 1;
+                        balls.push(Ball::new(
+                            player.rect.point()
+                            + vec2(player.rect.w * 0.5f32 - BALL_SIZE * 0.5f32, -50f32)
+                        ));
+                        if player_lives <= 0 {
+                            game_state = GameState::Dead;
+                        }
+                    }
+
+                blocks.retain(|block| block.lives > 0);
+                if blocks.is_empty() {
+                    game_state = GameState::LevelCompleted;
+                }
+            }
+            GameState::Dead | GameState::LevelCompleted => {
+                if is_key_pressed(KeyCode::Space) {
+                    game_state = GameState::Menu;
+                    reset_game(
+                        &mut score, 
+                        &mut player_lives, 
+                        &mut blocks, 
+                        &mut balls, 
+                        &mut player
+                    );
                 }
             }
         }
 
-        blocks.retain(|block| block.lives > 0);
         clear_background(WHITE);
         player.draw();
         for block in blocks.iter() {
@@ -138,29 +180,42 @@ async fn main() {
             ball.draw();
         }
 
-        let score_text = format!("Score: {}", score);
-        draw_text_ex(
-            &score_text,
-            40.0,
-            40.0,
-            TextParams {
-                font_size: 30u16,
-                color: BLACK,
-                ..Default::default()
+        match game_state {
+            GameState::Menu => {
+                draw_title_text("Press SPACE to Start");
             },
-        );
+            GameState::Game => {
+                let score_text = format!("Score: {}", score);
+                draw_text_ex(
+                    &score_text,
+                    40.0,
+                    40.0,
+                    TextParams {
+                        font_size: 30u16,
+                        color: BLACK,
+                        ..Default::default()
+                    },
+                );
 
-        let player_lives_text = format!("Lives: {}", player_lives);
-        draw_text_ex(
-            &player_lives_text,
-            screen_width() / 2.0,
-            40.0,
-            TextParams {
-                font_size: 30u16,
-                color: BLACK,
-                ..Default::default()
+                let player_lives_text = format!("Lives: {}", player_lives);
+                draw_text_ex(
+                    &player_lives_text,
+                    screen_width() / 2.0,
+                    40.0,
+                    TextParams {
+                        font_size: 30u16,
+                        color: BLACK,
+                        ..Default::default()
+                    },
+                );
             },
-        );
+            GameState::LevelCompleted => {
+                draw_title_text(&format!("You win! Score: {}", score));
+            },
+            GameState::Dead => {
+                draw_title_text(&format!("You died! Score: {}", score));
+            },
+        }
 
         next_frame().await
     }
