@@ -5,7 +5,60 @@ mod ball;
 
 use player::Player;
 use block::{Block, BLOCK_SIZE};
-use ball::Ball;
+use ball::{Ball, BALL_SIZE};
+
+pub enum GameState {
+    Menu,
+    Game,
+    LevelCompleted,
+    Dead,
+}
+
+pub fn draw_title_text(text: &str) {
+    draw_text_ex(
+        text,
+        40.0,
+        40.0,
+        TextParams {
+            font_size: 30u16,
+            color: BLACK,
+            ..Default::default()
+        },
+    );
+}
+
+
+fn init_blocks(blocks: &mut Vec<Block>) {
+    let (width, height) = (6, 6);
+    let padding = 5f32;
+    let total_block_size = BLOCK_SIZE + vec2(padding, padding);
+    let board_start_pos = vec2((screen_width() - (total_block_size.x * width as f32)) * 0.5f32, 50f32);
+
+    for i in 0..width * height {
+        let block_x = (i % width) as f32 * total_block_size.x;
+        let block_y = (i / width) as f32 * total_block_size.y;
+        blocks.push(Block::new(board_start_pos + vec2(block_x, block_y)));
+    }
+}
+
+fn reset_game(
+    score: &mut i32,
+    player_lives: &mut i32,
+    blocks: &mut Vec<Block>,
+    balls: &mut Vec<Ball>,
+    player: &mut Player,
+) {
+    *player = Player::new();
+    *score = 0;
+    *player_lives = 3;
+    balls.clear();
+    balls.push(Ball::new(vec2(
+        screen_width() * 0.5f32 - BALL_SIZE * 0.5f32,
+        screen_height() * 0.5f32,
+    )));
+    blocks.clear();
+    init_blocks(blocks);
+}
 
 // aabb collision with positional corrections
 fn resolve_collision(a: &mut Rect, vel: &mut Vec2, b: &Rect) -> bool {
