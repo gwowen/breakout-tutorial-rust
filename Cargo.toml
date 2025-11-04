@@ -3,6 +3,8 @@ members = [
     "crates/lessons/lesson-1",
     "crates/lessons/lesson-2",
     "crates/lessons/lesson-3",
+    "crates/lessons/lesson-4",
+    "crates/lessons/lesson-4.5",
 ]
 resolver = "2"
 
